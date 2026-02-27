@@ -426,7 +426,7 @@
         nearest = row;
       }
     }
-    return nearest;
+    return { nearest, distKm: minDist };
   }
 
   async function run() {
@@ -445,11 +445,16 @@
 
         try {
           const puertas = await fetchPuertas();
-          const nearest = findNearest(puertas, latitude, longitude);
+          const { nearest, distKm } = findNearest(puertas, latitude, longitude);
 
           if (!nearest) {
             showError('No pudimos identificar un elemento cercano. Te llevamos al museo.');
             setTimeout(() => window.location.href = FALLBACK_URL, 3000);
+            return;
+          }
+
+          if (distKm > 0.15) {
+            showError('No hay puertas patrimoniales de la exploración a menos de 150 m de tu ubicación. Acércate a una de ellas e intenta de nuevo.');
             return;
           }
 
