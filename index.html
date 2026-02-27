@@ -397,9 +397,10 @@
         skipEmptyLines: true,
         complete: (results) => {
           const puertas = results.data.filter(row => {
-            const elem    = (row['Elemento'] || '').trim();
-            const modelo3d = (row['¿Tiene Modelo 3D?'] || '').trim();
-            return elem === 'Puerta' && modelo3d === 'Sí';
+            const elem        = (row['Elemento'] || '').trim();
+            const modelo3d    = (row['¿Tiene Modelo 3D?'] || '').trim();
+            const exploracion = (row['Exploración'] || '').trim().toUpperCase();
+            return elem === 'Puerta' && modelo3d === 'Sí' && exploracion === 'PUERTAS QUE HABLAN';
           });
           if (puertas.length === 0) {
             reject(new Error('No se encontraron puertas con modelo 3D en el registro.'));
