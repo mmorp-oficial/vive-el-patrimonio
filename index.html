@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MMORP · Puertas que Hablan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Courier+Prime&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <style>
+    :root {
+      --cream: #f5f0e8;
+      --ink: #1a1410;
+      --rust: #8b3a1a;
+      --gold: #c9a84c;
+      --muted: #7a6e62;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      background: var(--cream);
+      color: var(--ink);
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      overflow: hidden;
+    }
+
+    /* Fondo con textura sutil */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(26,20,16,0.04) 39px, rgba(26,20,16,0.04) 40px),
+        repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(26,20,16,0.02) 39px, rgba(26,20,16,0.02) 40px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    /* Ornamento superior */
+    .ornament {
+      font-family: 'Courier Prime', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.35em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 2.5rem;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.2s forwards;
+    }
+
+    .ornament::before,
+    .ornament::after {
+      content: '—';
+      margin: 0 0.8em;
+      color: var(--rust);
+    }
+
+    /* Icono puerta animado */
+    .door-icon {
+      width: 60px;
+      height: 80px;
+      margin: 0 auto 2rem;
+      position: relative;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.4s forwards;
+    }
+
+    .door-icon svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Estado: título y subtítulo */
+    .title {
+      font-size: clamp(2rem, 7vw, 3rem);
+      font-weight: 300;
+      letter-spacing: 0.02em;
+      line-height: 1.1;
+      margin-bottom: 0.5rem;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.5s forwards;
+    }
+
+    .title em {
+      font-style: italic;
+      color: var(--rust);
+    }
+
+    .subtitle {
+      font-family: 'Courier Prime', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.25em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 3rem;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.6s forwards;
+    }
+
+    /* Barra de progreso / pulso */
+    .status-area {
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.8s forwards;
+    }
+
+    .pulse-ring {
+      width: 48px;
+      height: 48px;
+      border: 1.5px solid var(--rust);
+      border-radius: 50%;
+      margin: 0 auto 1.5rem;
+      position: relative;
+      animation: pulseRing 1.6s ease-in-out infinite;
+    }
+
+    .pulse-ring::after {
+      content: '';
+      position: absolute;
+      inset: 6px;
+      border: 1px solid var(--gold);
+      border-radius: 50%;
+      animation: pulseRing 1.6s ease-in-out 0.4s infinite;
+    }
+
+    @keyframes pulseRing {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.15); opacity: 0.5; }
+    }
+
+    .status-text {
+      font-family: 'Courier Prime', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      text-transform: uppercase;
+      min-height: 1.2em;
+      transition: all 0.4s ease;
+    }
+
+    /* Estado de error */
+    .error-area {
+      display: none;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .error-area.visible {
+      display: block;
+      opacity: 1;
+    }
+
+    .error-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .error-title {
+      font-size: 1.4rem;
+      font-weight: 300;
+      font-style: italic;
+      color: var(--rust);
+      margin-bottom: 0.5rem;
+    }
+
+    .error-desc {
+      font-family: 'Courier Prime', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      line-height: 1.8;
+      margin-bottom: 2rem;
+      max-width: 280px;
+    }
+
+    .btn-retry {
+      display: inline-block;
+      font-family: 'Courier Prime', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--cream);
+      background: var(--ink);
+      border: none;
+      padding: 0.9em 2em;
+      cursor: pointer;
+      position: relative;
+      transition: background 0.2s;
+      margin-bottom: 1rem;
+    }
+
+    .btn-retry:hover {
+      background: var(--rust);
+    }
+
+    .btn-secondary {
+      display: block;
+      font-family: 'Courier Prime', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: color 0.2s, border-color 0.2s;
+      margin-top: 0.5rem;
+    }
+
+    .btn-secondary:hover {
+      color: var(--rust);
+      border-color: var(--rust);
+    }
+
+    /* Éxito */
+    .success-area {
+      display: none;
+    }
+
+    .success-area.visible {
+      display: block;
+      animation: fadeUp 0.6s ease forwards;
+    }
+
+    .check-circle {
+      width: 56px;
+      height: 56px;
+      border: 1.5px solid var(--gold);
+      border-radius: 50%;
+      margin: 0 auto 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+
+    .success-text {
+      font-size: 1.2rem;
+      font-style: italic;
+      color: var(--rust);
+      margin-bottom: 0.3rem;
+    }
+
+    .success-id {
+      font-family: 'Courier Prime', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.25em;
+      color: var(--muted);
+    }
+
+    /* Footer */
+    .footer {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 0; right: 0;
+      text-align: center;
+      font-family: 'Courier Prime', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.25em;
+      color: var(--gold);
+      opacity: 0.6;
+      z-index: 1;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Línea decorativa */
+    .divider {
+      width: 40px;
+      height: 1px;
+      background: var(--gold);
+      margin: 1.5rem auto;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.7s forwards;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="ornament">Museo Mexicano de Otras Realidades del Patrimonio</div>
+
+  <div class="door-icon">
+    <svg viewBox="0 0 60 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="4" y="4" width="52" height="72" rx="1" stroke="#8b3a1a" stroke-width="1.5"/>
+      <rect x="10" y="10" width="40" height="60" rx="1" stroke="#c9a84c" stroke-width="0.8"/>
+      <rect x="14" y="14" width="14" height="24" rx="0.5" stroke="#c9a84c" stroke-width="0.6" stroke-dasharray="2 1"/>
+      <rect x="32" y="14" width="14" height="24" rx="0.5" stroke="#c9a84c" stroke-width="0.6" stroke-dasharray="2 1"/>
+      <rect x="14" y="42" width="32" height="22" rx="0.5" stroke="#c9a84c" stroke-width="0.6" stroke-dasharray="2 1"/>
+      <circle cx="37" cy="53" r="2" stroke="#8b3a1a" stroke-width="1"/>
+      <line x1="30" y1="0" x2="30" y2="4" stroke="#c9a84c" stroke-width="0.8"/>
+      <line x1="0" y1="74" x2="60" y2="74" stroke="#1a1410" stroke-width="2"/>
+    </svg>
+  </div>
+
+  <h1 class="title">Puertas<br/><em>que Hablan</em></h1>
+  <p class="subtitle">Exploracion patrimonial · CDMX</p>
+
+  <div class="divider"></div>
+
+  <!-- Estado activo (cargando) -->
+  <div class="status-area" id="statusArea">
+    <div class="pulse-ring"></div>
+    <p class="status-text" id="statusText">Obteniendo ubicación…</p>
+  </div>
+
+  <!-- Estado error / permiso denegado -->
+  <div class="error-area" id="errorArea">
+    <div class="error-icon">🚪</div>
+    <p class="error-title">Acceso requerido</p>
+    <p class="error-desc" id="errorDesc">
+      Necesitamos tu ubicación para mostrarte la puerta patrimonial más cercana a ti.
+    </p>
+    <button class="btn-retry" id="btnRetry">Intentar de nuevo</button>
+    <a href="https://mmorp-db.web.app" class="btn-secondary" id="btnFallback">Explorar el museo →</a>
+  </div>
+
+  <!-- Estado éxito -->
+  <div class="success-area" id="successArea">
+    <div class="check-circle">✦</div>
+    <p class="success-text">Puerta encontrada</p>
+    <p class="success-id" id="successId">—</p>
+  </div>
+
+</div>
+
+<div class="footer">MMORP · CAMMARQ</div>
+
+<script>
+  const SHEET_ID = '1oDjB95M8kSD2zREeUAiYqHSGl9gVWnV0HXV4tAwwaeE';
+  const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
+  const REDIRECT_BASE = 'https://mmorp-db.web.app/?model=';
+  const FALLBACK_URL = 'https://mmorp-db.web.app';
+
+  const statusArea = document.getElementById('statusArea');
+  const statusText = document.getElementById('statusText');
+  const errorArea  = document.getElementById('errorArea');
+  const errorDesc  = document.getElementById('errorDesc');
+  const successArea = document.getElementById('successArea');
+  const successId   = document.getElementById('successId');
+  const btnRetry    = document.getElementById('btnRetry');
+
+  function showStatus(msg) {
+    statusText.textContent = msg;
+  }
+
+  function showError(msg) {
+    errorDesc.textContent = msg;
+    statusArea.style.display = 'none';
+    errorArea.classList.add('visible');
+    // Pequeño delay para que se note la transición
+    requestAnimationFrame(() => errorArea.style.opacity = '1');
+  }
+
+  function showSuccess(id) {
+    statusArea.style.display = 'none';
+    successId.textContent = id;
+    successArea.classList.add('visible');
+  }
+
+  // Fórmula de Haversine para calcular distancia en km
+  function haversine(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(lat1 * Math.PI / 180) *
+      Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  async function fetchPuertas() {
+    showStatus('Consultando registro patrimonial…');
+    return new Promise((resolve, reject) => {
+      Papa.parse(SHEET_CSV_URL, {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: (results) => {
+          const puertas = results.data.filter(row => {
+            const elem = (row['Elemento'] || '').trim();
+            return elem === 'Puerta';
+          });
+          if (puertas.length === 0) {
+            reject(new Error('No se encontraron puertas en el registro.'));
+          } else {
+            resolve(puertas);
+          }
+        },
+        error: (err) => reject(err)
+      });
+    });
+  }
+
+  function findNearest(puertas, userLat, userLon) {
+    let nearest = null;
+    let minDist = Infinity;
+    for (const row of puertas) {
+      const lat = parseFloat(row['Latitud']);
+      const lon = parseFloat(row['Longitud']);
+      if (isNaN(lat) || isNaN(lon)) continue;
+      const dist = haversine(userLat, userLon, lat, lon);
+      if (dist < minDist) {
+        minDist = dist;
+        nearest = row;
+      }
+    }
+    return nearest;
+  }
+
+  async function run() {
+    // 1. Obtener ubicación del usuario
+    if (!navigator.geolocation) {
+      showError('Tu navegador no soporta geolocalización. Visita el museo para explorar los elementos patrimoniales.');
+      return;
+    }
+
+    showStatus('Obteniendo ubicación…');
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        showStatus('Localizando la puerta más cercana…');
+
+        try {
+          const puertas = await fetchPuertas();
+          const nearest = findNearest(puertas, latitude, longitude);
+
+          if (!nearest) {
+            showError('No pudimos identificar un elemento cercano. Te llevamos al museo.');
+            setTimeout(() => window.location.href = FALLBACK_URL, 3000);
+            return;
+          }
+
+          const codigoID = nearest['Código ID'] || nearest['C\u00f3digo ID'] || '';
+          showStatus('Redirigiendo…');
+          showSuccess(codigoID);
+
+          setTimeout(() => {
+            window.location.href = REDIRECT_BASE + encodeURIComponent(codigoID);
+          }, 1200);
+
+        } catch (err) {
+          console.error(err);
+          showError('Hubo un problema al consultar el registro patrimonial. Intenta de nuevo.');
+        }
+      },
+      (err) => {
+        let msg = 'Necesitamos tu ubicación para mostrarte la puerta patrimonial más cercana a ti.';
+        if (err.code === err.PERMISSION_DENIED) {
+          msg = 'Denegaste el acceso a tu ubicación. Activa el permiso en tu navegador e intenta de nuevo, o explora el museo.';
+        } else if (err.code === err.POSITION_UNAVAILABLE) {
+          msg = 'No pudimos obtener tu ubicación en este momento. Verifica tu señal GPS e intenta de nuevo.';
+        } else if (err.code === err.TIMEOUT) {
+          msg = 'La solicitud de ubicación tardó demasiado. Intenta de nuevo en un lugar con mejor señal.';
+        }
+        showError(msg);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
+  }
+
+  btnRetry.addEventListener('click', () => {
+    errorArea.classList.remove('visible');
+    errorArea.style.display = 'none';
+    statusArea.style.display = 'block';
+    run();
+  });
+
+  // Iniciar automáticamente con un pequeño delay para que se carguen las animaciones
+  setTimeout(run, 1000);
+</script>
+</body>
+</html>
