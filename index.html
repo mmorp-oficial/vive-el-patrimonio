@@ -397,11 +397,12 @@
         skipEmptyLines: true,
         complete: (results) => {
           const puertas = results.data.filter(row => {
-            const elem = (row['Elemento'] || '').trim();
-            return elem === 'Puerta';
+            const elem    = (row['Elemento'] || '').trim();
+            const modelo3d = (row['¿Tiene Modelo 3D?'] || '').trim();
+            return elem === 'Puerta' && modelo3d === 'Sí';
           });
           if (puertas.length === 0) {
-            reject(new Error('No se encontraron puertas en el registro.'));
+            reject(new Error('No se encontraron puertas con modelo 3D en el registro.'));
           } else {
             resolve(puertas);
           }
