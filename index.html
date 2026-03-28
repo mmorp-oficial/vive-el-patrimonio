@@ -6,34 +6,43 @@
   <title>MMORP · Puertas que Hablan</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500&family=Bebas+Neue&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Courier+Prime&display=swap" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <style>
     :root {
-      --yellow: #FFE000;
-      --black:  #0a0a0a;
-      --gray:   #1e1e1e;
+      --cream: #f5f0e8;
+      --ink: #1a1410;
+      --rust: #8b3a1a;
+      --gold: #c9a84c;
+      --muted: #7a6e62;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     html, body {
       height: 100%;
-      background: var(--yellow);
-      color: var(--black);
-      font-family: 'Space Grotesk', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      font-family: 'Cormorant Garamond', Georgia, serif;
       overflow: hidden;
     }
 
-    /* ── Layout principal ── */
-    .page {
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
+    /* Fondo con textura sutil */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(26,20,16,0.04) 39px, rgba(26,20,16,0.04) 40px),
+        repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(26,20,16,0.02) 39px, rgba(26,20,16,0.02) 40px);
+      pointer-events: none;
+      z-index: 0;
     }
 
-    .main {
-      flex: 1;
+    .container {
+      position: relative;
+      z-index: 1;
+      height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -42,279 +51,454 @@
       text-align: center;
     }
 
-    /* ── Logo MMORP ── */
-    .logo-mmorp {
-      mix-blend-mode: screen;
-      width: clamp(200px, 55vw, 320px);
-      margin-bottom: 0.6rem;
-      
+    /* Ornamento superior */
+    .ornament {
+      font-family: 'Courier Prime', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.35em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 2.5rem;
       opacity: 0;
-      animation: fadeDown 0.7s ease 0.2s forwards;
+      animation: fadeUp 0.8s ease 0.2s forwards;
     }
 
-    /* ── Subtítulo exploración ── */
-    .exp-label {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: clamp(1rem, 4vw, 1.4rem);
-      letter-spacing: 0.22em;
-      color: var(--black);
+    .ornament::before,
+    .ornament::after {
+      content: '—';
+      margin: 0 0.8em;
+      color: var(--rust);
+    }
+
+    /* Icono puerta animado */
+    .door-icon {
+      width: 60px;
+      height: 80px;
+      margin: 0 auto 2rem;
+      position: relative;
       opacity: 0;
-      animation: fadeDown 0.7s ease 0.4s forwards;
+      animation: fadeUp 0.8s ease 0.4s forwards;
+    }
+
+    .door-icon svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Estado: título y subtítulo */
+    .title {
+      font-size: clamp(2rem, 7vw, 3rem);
+      font-weight: 300;
+      letter-spacing: 0.02em;
+      line-height: 1.1;
+      margin-bottom: 0.5rem;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.5s forwards;
+    }
+
+    .title em {
+      font-style: italic;
+      color: var(--rust);
+    }
+
+    .subtitle {
+      font-family: 'Courier Prime', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.25em;
+      color: var(--muted);
+      text-transform: uppercase;
       margin-bottom: 3rem;
-    }
-
-    /* ── Divider ── */
-    .divider {
-      width: 40px;
-      height: 2px;
-      background: var(--black);
-      margin: 0 auto 2.5rem;
       opacity: 0;
-      animation: fadeDown 0.7s ease 0.5s forwards;
+      animation: fadeUp 0.8s ease 0.6s forwards;
     }
 
-    /* ── Pulso ── */
+    /* Barra de progreso / pulso */
     .status-area {
       opacity: 0;
-      animation: fadeDown 0.7s ease 0.65s forwards;
+      animation: fadeUp 0.8s ease 0.8s forwards;
     }
 
     .pulse-ring {
-      width: 44px;
-      height: 44px;
-      border: 2px solid var(--black);
+      width: 48px;
+      height: 48px;
+      border: 1.5px solid var(--rust);
       border-radius: 50%;
-      margin: 0 auto 1.2rem;
+      margin: 0 auto 1.5rem;
       position: relative;
-      animation: pulseRing 1.5s ease-in-out infinite;
+      animation: pulseRing 1.6s ease-in-out infinite;
     }
+
     .pulse-ring::after {
       content: '';
       position: absolute;
-      inset: 7px;
-      border: 1px solid rgba(0,0,0,0.4);
+      inset: 6px;
+      border: 1px solid var(--gold);
       border-radius: 50%;
-      animation: pulseRing 1.5s ease-in-out 0.35s infinite;
+      animation: pulseRing 1.6s ease-in-out 0.4s infinite;
     }
+
     @keyframes pulseRing {
-      0%,100% { transform: scale(1); opacity:1; }
-      50% { transform: scale(1.18); opacity:0.4; }
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.15); opacity: 0.5; }
     }
 
     .status-text {
-      font-size: 0.7rem;
-      font-weight: 500;
-      letter-spacing: 0.28em;
+      font-family: 'Courier Prime', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
       text-transform: uppercase;
-      color: var(--black);
       min-height: 1.2em;
+      transition: all 0.4s ease;
     }
 
-    /* ── Error ── */
+    /* Estado de error */
     .error-area {
       display: none;
       opacity: 0;
-      transition: opacity 0.4s ease;
+      transition: opacity 0.5s ease;
     }
+
     .error-area.visible {
       display: block;
       opacity: 1;
     }
 
     .error-icon {
-      font-size: 2.2rem;
-      margin-bottom: 0.8rem;
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
     }
+
     .error-title {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.6rem;
-      letter-spacing: 0.1em;
+      font-size: 1.4rem;
+      font-weight: 300;
+      font-style: italic;
+      color: var(--rust);
       margin-bottom: 0.5rem;
     }
+
     .error-desc {
-      font-size: 0.78rem;
-      font-weight: 300;
-      letter-spacing: 0.04em;
-      color: #333;
-      line-height: 1.7;
-      max-width: 300px;
-      margin: 0 auto 1.8rem;
+      font-family: 'Courier Prime', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      line-height: 1.8;
+      margin-bottom: 2rem;
+      max-width: 280px;
     }
 
     .btn-retry {
       display: inline-block;
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 0.9rem;
+      font-family: 'Courier Prime', monospace;
+      font-size: 0.7rem;
       letter-spacing: 0.3em;
-      color: var(--yellow);
-      background: var(--black);
+      text-transform: uppercase;
+      color: var(--cream);
+      background: var(--ink);
       border: none;
-      padding: 0.8em 2.2em;
+      padding: 0.9em 2em;
       cursor: pointer;
+      position: relative;
       transition: background 0.2s;
-      margin-bottom: 0.8rem;
+      margin-bottom: 1rem;
     }
-    .btn-retry:hover { background: #333; }
+
+    .btn-retry:hover {
+      background: var(--rust);
+    }
 
     .btn-secondary {
       display: block;
-      font-size: 0.68rem;
-      font-weight: 400;
-      letter-spacing: 0.18em;
+      font-family: 'Courier Prime', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
       text-transform: uppercase;
-      color: #444;
+      color: var(--muted);
       text-decoration: none;
       border-bottom: 1px solid transparent;
       transition: color 0.2s, border-color 0.2s;
-      margin-top: 0.4rem;
+      margin-top: 0.5rem;
     }
-    .btn-secondary:hover { color: var(--black); border-color: var(--black); }
 
-    /* ── Éxito ── */
-    .success-area { display: none; }
+    .btn-secondary:hover {
+      color: var(--rust);
+      border-color: var(--rust);
+    }
+
+    /* Éxito */
+    .success-area {
+      display: none;
+    }
+
     .success-area.visible {
       display: block;
-      animation: fadeDown 0.5s ease forwards;
+      animation: fadeUp 0.6s ease forwards;
     }
+
     .check-circle {
-      width: 52px; height: 52px;
-      border: 2px solid var(--black);
+      width: 56px;
+      height: 56px;
+      border: 1.5px solid var(--gold);
       border-radius: 50%;
-      margin: 0 auto 1.2rem;
+      margin: 0 auto 1.5rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.3rem;
-    }
-    .success-text {
-      font-family: 'Bebas Neue', sans-serif;
       font-size: 1.5rem;
-      letter-spacing: 0.12em;
+    }
+
+    .success-text {
+      font-size: 1.2rem;
+      font-style: italic;
+      color: var(--rust);
       margin-bottom: 0.3rem;
     }
+
     .success-id {
+      font-family: 'Courier Prime', monospace;
       font-size: 0.68rem;
-      letter-spacing: 0.22em;
-      color: #444;
+      letter-spacing: 0.25em;
+      color: var(--muted);
     }
 
-    /* ── Footer ── */
-    footer {
-      background: var(--black);
-      padding: 1rem 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-
-    .footer-logo {
-      mix-blend-mode: screen;
-      height: 28px;
-      mix-blend-mode: screen;
-      opacity: 0.9;
-    }
-
-    .footer-socials {
-      display: flex;
-      align-items: center;
-      gap: 1.2rem;
-    }
-
-    .footer-socials a {
-      color: var(--yellow);
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      opacity: 0.85;
-      transition: opacity 0.2s;
-    }
-    .footer-socials a:hover { opacity: 1; }
-    .footer-socials svg { width: 20px; height: 20px; fill: var(--yellow); }
-
-    .footer-copy {
-      font-size: 0.58rem;
-      letter-spacing: 0.2em;
-      color: rgba(255,224,0,0.4);
-      text-transform: uppercase;
-      width: 100%;
+    /* Footer */
+    .footer {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 0; right: 0;
       text-align: center;
-      margin-top: 0.2rem;
+      font-family: 'Courier Prime', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.25em;
+      color: var(--gold);
+      opacity: 0.6;
+      z-index: 1;
     }
 
-    @keyframes fadeDown {
-      from { opacity:0; transform: translateY(-10px); }
-      to   { opacity:1; transform: translateY(0); }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Línea decorativa */
+    .divider {
+      width: 40px;
+      height: 1px;
+      background: var(--gold);
+      margin: 1.5rem auto;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.7s forwards;
     }
   </style>
 </head>
 <body>
 
-<div class="page">
+<div class="container">
 
-  <main class="main">
+  <div class="ornament">Museo Mexicano de Otras Realidades del Patrimonio</div>
 
-    <img src="/MMORP_logo_blanco.png" alt="MMORP" class="logo-mmorp" />
+  <div class="door-icon">
+    <svg viewBox="0 0 60 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="4" y="4" width="52" height="72" rx="1" stroke="#8b3a1a" stroke-width="1.5"/>
+      <rect x="10" y="10" width="40" height="60" rx="1" stroke="#c9a84c" stroke-width="0.8"/>
+      <rect x="14" y="14" width="14" height="24" rx="0.5" stroke="#c9a84c" stroke-width="0.6" stroke-dasharray="2 1"/>
+      <rect x="32" y="14" width="14" height="24" rx="0.5" stroke="#c9a84c" stroke-width="0.6" stroke-dasharray="2 1"/>
+      <rect x="14" y="42" width="32" height="22" rx="0.5" stroke="#c9a84c" stroke-width="0.6" stroke-dasharray="2 1"/>
+      <circle cx="37" cy="53" r="2" stroke="#8b3a1a" stroke-width="1"/>
+      <line x1="30" y1="0" x2="30" y2="4" stroke="#c9a84c" stroke-width="0.8"/>
+      <line x1="0" y1="74" x2="60" y2="74" stroke="#1a1410" stroke-width="2"/>
+    </svg>
+  </div>
 
-    <p class="exp-label">Puertas que Hablan</p>
-    <div class="divider"></div>
+  <h1 class="title">Puertas<br/><em>que Hablan</em></h1>
+  <p class="subtitle">Exploracion patrimonial · CDMX</p>
 
-    <!-- Cargando -->
-    <div class="status-area" id="statusArea">
-      <div class="pulse-ring"></div>
-      <p class="status-text" id="statusText">Obteniendo ubicación…</p>
-    </div>
+  <div class="divider"></div>
 
-    <!-- Error -->
-    <div class="error-area" id="errorArea">
-      <div class="error-icon">🚪</div>
-      <p class="error-title">Acceso requerido</p>
-      <p class="error-desc" id="errorDesc">
-        Necesitamos tu ubicación para mostrarte la puerta patrimonial más cercana a ti.
-      </p>
-      <button class="btn-retry" id="btnRetry">Intentar de nuevo</button>
-      <a href="https://mmorp-db.web.app" class="btn-secondary" id="btnFallback">Explorar el museo →</a>
-    </div>
+  <!-- Estado activo (cargando) -->
+  <div class="status-area" id="statusArea">
+    <div class="pulse-ring"></div>
+    <p class="status-text" id="statusText">Obteniendo ubicación…</p>
+  </div>
 
-    <!-- Éxito -->
-    <div class="success-area" id="successArea">
-      <div class="check-circle">✦</div>
-      <p class="success-text">Puerta encontrada</p>
-      <p class="success-id" id="successId">—</p>
-    </div>
+  <!-- Estado error / permiso denegado -->
+  <div class="error-area" id="errorArea">
+    <div class="error-icon">🚪</div>
+    <p class="error-title">Acceso requerido</p>
+    <p class="error-desc" id="errorDesc">
+      Necesitamos tu ubicación para mostrarte la puerta patrimonial más cercana a ti.
+    </p>
+    <button class="btn-retry" id="btnRetry">Intentar de nuevo</button>
+    <a href="https://mmorp-db.web.app" class="btn-secondary" id="btnFallback">Explorar el museo →</a>
+  </div>
 
-  </main>
-
-  <footer>
-    <img src="/cammarq_b.png" alt="CAMMARQ" class="footer-logo" />
-
-    <div class="footer-socials">
-      <!-- Instagram -->
-      <a href="https://www.instagram.com/mmorp_oficial/" target="_blank" aria-label="Instagram">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.334 3.608 1.308.975.975 1.246 2.242 1.308 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.062 1.366-.334 2.633-1.308 3.608-.975.975-2.242 1.246-3.608 1.308-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.334-3.608-1.308-.975-.975-1.246-2.242-1.308-3.608C2.175 15.584 2.163 15.204 2.163 12s.012-3.584.07-4.85c.062-1.366.334-2.633 1.308-3.608.975-.975 2.242-1.246 3.608-1.308C8.416 2.175 8.796 2.163 12 2.163zm0-2.163C8.741 0 8.332.014 7.052.072 5.197.157 3.355.673 2.014 2.014.673 3.355.157 5.197.072 7.052.014 8.332 0 8.741 0 12c0 3.259.014 3.668.072 4.948.085 1.855.601 3.697 1.942 5.038 1.341 1.341 3.183 1.857 5.038 1.942C8.332 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 1.855-.085 3.697-.601 5.038-1.942 1.341-1.341 1.857-3.183 1.942-5.038C23.986 15.668 24 15.259 24 12c0-3.259-.014-3.668-.072-4.948-.085-1.855-.601-3.697-1.942-5.038C20.645.673 18.803.157 16.948.072 15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zm0 10.162a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/>
-        </svg>
-      </a>
-      <!-- Facebook -->
-      <a href="https://www.facebook.com/profile.php?id=61583203480088&locale=es_LA" target="_blank" aria-label="Facebook">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.532-4.697 1.312 0 2.686.235 2.686.235v2.97h-1.514c-1.491 0-1.956.93-1.956 1.886v2.269h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/>
-        </svg>
-      </a>
-      <!-- TikTok -->
-      <a href="https://www.tiktok.com/@mmorp_oficial" target="_blank" aria-label="TikTok">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>
-        </svg>
-      </a>
-    </div>
-
-    <p class="footer-copy">MMORP · Museo Mexicano de Otras Realidades del Patrimonio</p>
-  </footer>
+  <!-- Estado éxito -->
+  <div class="success-area" id="successArea">
+    <div class="check-circle">✦</div>
+    <p class="success-text">Puerta encontrada</p>
+    <p class="success-id" id="successId">—</p>
+  </div>
 
 </div>
 
+<div class="footer">MMORP · CAMMARQ</div>
 
+<script>
+  const SHEET_ID = '1oDjB95M8kSD2zREeUAiYqHSGl9gVWnV0HXV4tAwwaeE';
+  const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
+  const REDIRECT_BASE = 'https://mmorp-db.web.app/?model=';
+  const FALLBACK_URL = 'https://mmorp-db.web.app';
+
+  const statusArea = document.getElementById('statusArea');
+  const statusText = document.getElementById('statusText');
+  const errorArea  = document.getElementById('errorArea');
+  const errorDesc  = document.getElementById('errorDesc');
+  const successArea = document.getElementById('successArea');
+  const successId   = document.getElementById('successId');
+  const btnRetry    = document.getElementById('btnRetry');
+
+  function showStatus(msg) {
+    statusText.textContent = msg;
+  }
+
+  function showError(msg) {
+    errorDesc.textContent = msg;
+    statusArea.style.display = 'none';
+    errorArea.classList.add('visible');
+    // Pequeño delay para que se note la transición
+    requestAnimationFrame(() => errorArea.style.opacity = '1');
+  }
+
+  function showSuccess(id) {
+    statusArea.style.display = 'none';
+    successId.textContent = id;
+    successArea.classList.add('visible');
+  }
+
+  // Fórmula de Haversine para calcular distancia en km
+  function haversine(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(lat1 * Math.PI / 180) *
+      Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  async function fetchPuertas() {
+    showStatus('Consultando registro patrimonial…');
+    return new Promise((resolve, reject) => {
+      Papa.parse(SHEET_CSV_URL, {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: (results) => {
+          const puertas = results.data.filter(row => {
+            const elem        = (row['Elemento'] || '').trim();
+            const modelo3d    = (row['¿Tiene Modelo 3D?'] || '').trim();
+            const exploracion = (row['Exploración'] || '').trim().toUpperCase();
+            return elem === 'Puerta' && modelo3d === 'Sí' && exploracion === 'PUERTAS QUE HABLAN';
+          });
+          if (puertas.length === 0) {
+            reject(new Error('No se encontraron puertas con modelo 3D en el registro.'));
+          } else {
+            resolve(puertas);
+          }
+        },
+        error: (err) => reject(err)
+      });
+    });
+  }
+
+  function findNearest(puertas, userLat, userLon) {
+    let nearest = null;
+    let minDist = Infinity;
+    for (const row of puertas) {
+      const lat = parseFloat(row['Latitud']);
+      const lon = parseFloat(row['Longitud']);
+      if (isNaN(lat) || isNaN(lon)) continue;
+      const dist = haversine(userLat, userLon, lat, lon);
+      if (dist < minDist) {
+        minDist = dist;
+        nearest = row;
+      }
+    }
+    return { nearest, distKm: minDist };
+  }
+
+  async function run() {
+    // 1. Obtener ubicación del usuario
+    if (!navigator.geolocation) {
+      showError('Tu navegador no soporta geolocalización. Visita el museo para explorar los elementos patrimoniales.');
+      return;
+    }
+
+    showStatus('Obteniendo ubicación…');
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        showStatus('Localizando la puerta más cercana…');
+
+        try {
+          const puertas = await fetchPuertas();
+          const { nearest, distKm } = findNearest(puertas, latitude, longitude);
+
+          if (!nearest) {
+            showError('No pudimos identificar un elemento cercano. Te llevamos al museo.');
+            setTimeout(() => window.location.href = FALLBACK_URL, 3000);
+            return;
+          }
+
+          if (distKm > 0.15) {
+            showError('No hay puertas patrimoniales de la exploración a menos de 150 m de tu ubicación. Acércate a una de ellas e intenta de nuevo.');
+            return;
+          }
+
+          const codigoID = nearest['Código ID'] || nearest['C\u00f3digo ID'] || '';
+          showStatus('Redirigiendo…');
+          showSuccess(codigoID);
+
+          setTimeout(() => {
+            window.location.href = REDIRECT_BASE + encodeURIComponent(codigoID);
+          }, 1200);
+
+        } catch (err) {
+          console.error(err);
+          showError('Hubo un problema al consultar el registro patrimonial. Intenta de nuevo.');
+        }
+      },
+      (err) => {
+        let msg = 'Necesitamos tu ubicación para mostrarte la puerta patrimonial más cercana a ti.';
+        if (err.code === err.PERMISSION_DENIED) {
+          msg = 'Denegaste el acceso a tu ubicación. Activa el permiso en tu navegador e intenta de nuevo, o explora el museo.';
+        } else if (err.code === err.POSITION_UNAVAILABLE) {
+          msg = 'No pudimos obtener tu ubicación en este momento. Verifica tu señal GPS e intenta de nuevo.';
+        } else if (err.code === err.TIMEOUT) {
+          msg = 'La solicitud de ubicación tardó demasiado. Intenta de nuevo en un lugar con mejor señal.';
+        }
+        showError(msg);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
+  }
+
+  btnRetry.addEventListener('click', () => {
+    errorArea.classList.remove('visible');
+    errorArea.style.display = 'none';
+    statusArea.style.display = 'block';
+    run();
+  });
+
+  // Iniciar automáticamente con un pequeño delay para que se carguen las animaciones
+  setTimeout(run, 1000);
+</script>
 </body>
 </html>
